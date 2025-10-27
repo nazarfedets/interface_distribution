@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.inferface_distribution.EditDutyController"
+            prefHeight="400.0" prefWidth="300.0">
+
+    <children>
+        <Label layoutX="30" layoutY="20" text="Редагування наряду"/>
+        <Label layoutX="30" layoutY="70" text="Курсант:"/>
+        <ComboBox fx:id="cadetSelector" layoutX="120" layoutY="65" prefWidth="200"/>
+
+        <Label layoutX="30" layoutY="110" text="День:"/>
+        <Spinner fx:id="daySpinner" layoutX="120" layoutY="105" prefWidth="100"/>
+
+        <Label layoutX="30" layoutY="150" text="Місце:"/>
+        <ComboBox fx:id="placeSelector" layoutX="120" layoutY="145" prefWidth="200"/>
+
+        <Button fx:id="saveBtn" text="Зберегти" layoutX="70" layoutY="220" onAction="#onSave"/>
+        <Button fx:id="deleteBtn" text="Видалити" layoutX="160" layoutY="220" onAction="#onDelete"/>
+        <Button fx:id="swapBtn" text="Поміняти місцями" layoutX="250" layoutY="220" onAction="#onSwap"/>
+    </children>
+</AnchorPane>

@@ -7,10 +7,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -20,10 +17,8 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class DutyTableController {
     @FXML private Button btnCancel;
@@ -33,19 +28,19 @@ public class DutyTableController {
     private ObservableList<RowData> data;
     private final Map<String, ObservableList<RowData>> dutiesByMonth = new HashMap<>();
     @FXML private Button addFreeDays;
+    @FXML private ComboBox<String> placeDuty;
+    @FXML private Spinner<Integer> dutyCount;
+    @FXML private Button distributionBtn;
+    @FXML private Button changeDutybtn;
+    private List<String> kursanty;
 
-    private final List<String> kursanty = List.of(
-            "Петров Іван Сергійович",
-            "Ворон Сергій Петрович",
-            "Коваленко Вікторія Остапівна",
-            "Лисенко Богдан Олексійович",
-            "Савченко Анатолій Іванович",
-            "Бондар Ірина Ігорівна",
-            "Петров Семен Віталійович"
-    );
 
     @FXML
     private void initialize() {
+        kursanty = Database.users.stream()
+                .filter(u -> !u.getLogin().equals("admin"))
+                .map(User ::getPib)
+                .toList();
         monthSelector.getItems().addAll(
                 "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
                 "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"
@@ -68,6 +63,13 @@ public class DutyTableController {
         });
 
         tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+
+        SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1);
+        dutyCount.setValueFactory(valueFactory);
+
+        placeDuty.setItems(FXCollections.observableArrayList("Їдільння","Курс", "Варта"));
+
+        distributionBtn.setOnAction(e -> onAssignClick());
     }
 
     private void generateTableForMonth(int month) {
@@ -103,25 +105,7 @@ public class DutyTableController {
     }
 
     @FXML
-    private void cancelButton() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("admin-view.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.show();
-
-            Stage currentStage = (Stage) btnCancel.getScene().getWindow();
-            currentStage.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void ditributionDuty() {
+    private void distributionDuty(String place, int value) {
         if (data == null || data.isEmpty()) return;
 
         int year = LocalDate.now().getYear();
@@ -130,25 +114,38 @@ public class DutyTableController {
 
         for (int day = 1; day <= daysInMonth; day++) {
             for (RowData row : data) {
-                String current = row.getValuesForDays(day);
-                if (current == null || current.isEmpty()) {
-                    row.setValueForDay(day, "");
-                }
+                row.setValueForDay(day, "");
             }
         }
 
+        Map<RowData, List<Integer>> lastDutyDays = new HashMap<>();
+        for (RowData cadet : data) {
+            lastDutyDays.put(cadet, new ArrayList<>());
+        }
+
+        Random random = new Random();
+
         for (int day = 1; day <= daysInMonth; day++) {
-            for (RowData row : data) {
-                String current = row.getValuesForDays(day);
-                if (current == null || current.isEmpty()) {
-                    if (Math.random() < 0.3) {
-                        row.setValueForDay(day, "н");
-                    }
-                }
+            final int currentDay = day;
+            List<RowData> availableCadets = data.stream()
+                    .filter(c -> lastDutyDays.get(c).stream().noneMatch(d -> Math.abs(d - currentDay) < 3))
+                    .collect(Collectors.toList());
+
+            int assignments = Math.min(value, availableCadets.size());
+
+            for (int i = 0; i < assignments; i++) {
+                int index = random.nextInt(availableCadets.size());
+                RowData chosen = availableCadets.remove(index);
+
+                chosen.setValueForDay(day, place);
+                lastDutyDays.get(chosen).add(day);
             }
         }
+
         tableView.refresh();
     }
+
+
 
     @FXML
     private void openFreeDaysWindow() {
@@ -171,8 +168,76 @@ public class DutyTableController {
     }
 
     @FXML
-    private void openViewRequestWindow() {
+    private void onAssignClick() {
+        String place = placeDuty.getValue();
+        Integer count = dutyCount.getValue();
 
+        if (place == null) {
+            showError("Оберіть місце наряду!");
+            return;
+        }
+        int dailyCount = dutyCount.getValue();
+        distributionDuty(place, count);
     }
+
+    private void showError(String mwssage) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, mwssage);
+        alert.setHeaderText(null);
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void onEditDuty() {
+        RowData selectedRow = tableView.getSelectionModel().getSelectedItem();
+        TablePosition<?, ?> selectedCell = tableView.getSelectionModel().getSelectedCells().isEmpty()
+                ? null
+                : tableView.getSelectionModel().getSelectedCells().get(0);
+
+        if (selectedRow == null || selectedCell == null) {
+            showError("Оберіть курсанта та день для редагування!");
+            return;
+        }
+
+        int day = Integer.parseInt(selectedCell.getTableColumn().getText());
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("edit-duty.fxml"));
+            Parent root = loader.load();
+
+            EditDutyController controller = loader.getController();
+            controller.setData(data, selectedRow, day);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tableView.getScene().getWindow());
+            stage.showAndWait();
+
+            tableView.refresh();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void cancelButton() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("admin-view.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setMaximized(true);
+            stage.show();
+
+            Stage currentStage = (Stage) btnCancel.getScene().getWindow();
+            currentStage.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 

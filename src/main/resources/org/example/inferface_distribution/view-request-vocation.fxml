@@ -12,12 +12,12 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1540.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.inferface_distribution.ViewRequestVocatuonController">
    <center>
-      <TableView blendMode="MULTIPLY" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <TableView fx:id="tableView" blendMode="MULTIPLY" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <columns>
-          <TableColumn prefWidth="203.1999877691269" text="ПІП" />
-          <TableColumn prefWidth="67.199951171875" text="Дата" />
-            <TableColumn prefWidth="224.80001831054688" text="Тип" />
-            <TableColumn prefWidth="75.0" text="Статус" />
+            <TableColumn fx:id="pibColumn" prefWidth="203.0" text="ПІБ" />
+            <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Дата" />
+            <TableColumn fx:id="typeColumn" prefWidth="200.0" text="Тип" />
+            <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Статус" />
         </columns>
          <BorderPane.margin>
             <Insets bottom="10.0" left="10.0" />
@@ -30,9 +30,9 @@
    <right>
       <VBox alignment="CENTER" prefHeight="558.0" prefWidth="118.0" spacing="100.0" BorderPane.alignment="CENTER">
          <children>
-            <Button mnemonicParsing="false" text="Підтвердити" VBox.vgrow="NEVER" />
-            <Button mnemonicParsing="false" text="Відхилити" />
-            <Button fx:id="btnCancel"  mnemonicParsing="false" text="Назад" />
+            <Button fx:id="approveBtn" onAction="#approveRequest" mnemonicParsing="false" text="Підтвердити" VBox.vgrow="NEVER" />
+            <Button fx:id="rejectBtn" mnemonicParsing="false" onAction="#rejectRequest" text="Відхилити" />
+            <Button fx:id="btnCancel" onAction="#cancelButton"  mnemonicParsing="false" text="Назад" />
          </children>
          <BorderPane.margin>
             <Insets bottom="10.0" right="10.0" />

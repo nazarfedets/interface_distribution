@@ -22,8 +22,8 @@
                 <TextField fx:id="loginField" maxWidth="300.0" promptText="Логін" style="-fx-background-radius: 10;" />
                 <PasswordField fx:id="passwordField" maxWidth="300.0" promptText="Пароль" style="-fx-background-radius: 10;" />
                 <CheckBox text="Запам'ятати мене" />
-                <Label fx:id="errorLable" textFill="red" />
-                <Button fx:id="loginButton" onAction="#initialize" style="-fx-background-radius: 20; -fx-background-color: #719FD4; -fx-padding: 5 20 5 20;" text="Увійти" />
+                <Label fx:id="errorLabel" textFill="red" />
+                <Button fx:id="loginButton"  style="-fx-background-radius: 20; -fx-background-color: #719FD4; -fx-padding: 5 20 5 20;" text="Увійти" />
             </children>
         </VBox>
     </children>

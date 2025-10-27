@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.StackedAreaChart;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -13,8 +14,13 @@ import java.io.IOException;
 
 public class UserviewController {
     @FXML private Button requestVocation;
+    @FXML private Label errorLabel;
     @FXML private Button btnchangeDuty;
+    private User user;
 
+    public void setUser(User user) {
+        this.user = user;
+    }
     @FXML
     private void openRequestWindows() {
         try {

@@ -14,54 +14,58 @@ import java.io.IOException;
 
 public class HelloController {
     @FXML private Button loginButton;
-    @FXML private  TextField loginField;
+    @FXML private TextField loginField;
     @FXML private PasswordField passwordField;
-    @FXML private Label errorLable;
+    @FXML private Label errorLabel;
 
     @FXML
     public void initialize() {
-        errorLable.setText("");
+        errorLabel.setText("");
 
         loginButton.setOnAction(e -> {
             String login = loginField.getText();
             String password = passwordField.getText();
 
-            try {
-                if (login.equals("user") && password.equals("123")) {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("user-view.fxml"));
+            User user = Database.getUserByLogin(login);
+            if (user != null && user.getPassword().equals(password)) {
+                try {
+                    FXMLLoader loader;
+                    Stage stage = new Stage();
+
+                    if (user.getLogin().equals("admin")) {
+                        loader = new FXMLLoader(getClass().getResource("admin-view.fxml"));
+                        stage.setTitle("Меню адміністратора");
+                        stage.setMaximized(true);
+                    } else {
+                        loader = new FXMLLoader(getClass().getResource("user-view.fxml"));
+                        stage.setTitle("Меню користувача");
+                    }
+
                     Parent root = loader.load();
 
-                    Stage stage = new Stage();
-                    stage.setTitle("Меню користувача");
+                    // Передаємо користувача у контролер
+                    Object controller = loader.getController();
+                    if (controller instanceof UserviewController) {
+                        ((UserviewController) controller).setUser(user);
+                    }
+
                     stage.setScene(new Scene(root));
                     stage.show();
 
                     closeLoginWindow();
 
-                } else if (login.equals("admin") && password.equals("admin123")) {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("admin-view.fxml"));
-                    Parent root = loader.load();
-
-                    Stage stage = new Stage();
-                    stage.setTitle("Меню адміністратора");
-                    stage.setScene(new Scene(root));
-                    stage.setMaximized(true);
-                    stage.show();
-
-                    closeLoginWindow();
-
-                } else {
-                    errorLable.setText("Невірний логін або пароль!");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    errorLabel.setText("Помилка завантаження вікна!");
                 }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                errorLable.setText("Помилка завантаження вікна!");
+            } else {
+                errorLabel.setText("Невірний логін або пароль!");
             }
         });
     }
 
     private void closeLoginWindow() {
-        Stage closeloginStage = (Stage) loginButton.getScene().getWindow();
-        closeloginStage.close();
+        Stage stage = (Stage) loginButton.getScene().getWindow();
+        stage.close();
     }
 }
