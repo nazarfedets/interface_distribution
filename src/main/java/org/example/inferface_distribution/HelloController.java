@@ -8,6 +8,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -17,6 +19,8 @@ public class HelloController {
     @FXML private TextField loginField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
+    @FXML private ImageView backgroundImage;
+    @FXML private StackPane stackPane;
 
     @FXML
     public void initialize() {
@@ -62,6 +66,9 @@ public class HelloController {
                 errorLabel.setText("Невірний логін або пароль!");
             }
         });
+
+        backgroundImage.fitWidthProperty().bind(stackPane.widthProperty());
+        backgroundImage.fitHeightProperty().bind(stackPane.heightProperty());
     }
 
     private void closeLoginWindow() {
