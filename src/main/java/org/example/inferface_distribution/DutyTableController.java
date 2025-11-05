@@ -33,14 +33,26 @@ public class DutyTableController {
     @FXML private Button distributionBtn;
     @FXML private Button changeDutybtn;
     private List<String> kursanty;
+    private List<User> selectedKuranty;
 
+    public void setSelectedKuranty(List<User> selectKuranty) {
+        this.selectedKuranty = selectKuranty;
+        loadSelectedKuranty();
+    }
 
     @FXML
     private void initialize() {
-        kursanty = Database.users.stream()
-                .filter(u -> !u.getLogin().equals("admin"))
-                .map(User ::getPib)
+        if (selectedKuranty == null) {
+            UserDAO userDAO = new UserDAO();
+            selectedKuranty = userDAO.getAllUsers().stream()
+                    .filter(u -> !u.getLogin().equals("admin"))
+                    .toList();
+        }
+
+        kursanty = selectedKuranty.stream()
+                .map(User::getPib)
                 .toList();
+
         monthSelector.getItems().addAll(
                 "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
                 "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"
@@ -53,7 +65,6 @@ public class DutyTableController {
         pibCol.setCellValueFactory(new PropertyValueFactory<>("pib"));
         pibCol.setPrefWidth(150);
         tableView.getColumns().add(pibCol);
-
 
         generateTableForMonth(currentMonth.getValue());
 
@@ -71,6 +82,7 @@ public class DutyTableController {
 
         distributionBtn.setOnAction(e -> onAssignClick());
     }
+
 
     private void generateTableForMonth(int month) {
         tableView.getColumns().removeIf(col ->
@@ -91,18 +103,32 @@ public class DutyTableController {
         }
 
         String monthKey = year + "-" + month;
-        if (dutiesByMonth.containsKey(monthKey)) {
-            data = dutiesByMonth.get(monthKey);
-        } else {
-            data = FXCollections.observableArrayList();
-            for (String pib : kursanty) {
-                data.add(new RowData(pib, daysInMonth));
-            }
-            dutiesByMonth.put(monthKey, data);
+        DutyDAO dutyDAO = new DutyDAO();
+        List<Duty> dutiesFromDB = dutyDAO.getDutiesForMonth(year, month);
+        UserDAO userDAO = new UserDAO();
+        Map<String, String> pibToLogin = new HashMap<>();
+        for (User u : userDAO.getAllUsers()) {
+            pibToLogin.put(u.getPib(), u.getLogin());
         }
+
+        data = FXCollections.observableArrayList();
+        for (String pib : kursanty) {
+            RowData rowData = new RowData(pib, daysInMonth);
+
+            for (Duty d : dutiesFromDB) {
+                if (d.getUserLogin().equals(pibToLogin.get(pib))) {
+                    rowData.setValueForDay(d.getDay(), d.getPlace());
+                }
+            }
+
+            data.add(rowData);
+        }
+
+        dutiesByMonth.put(monthKey, data);
         tableView.setItems(data);
         tableView.setPrefWidth(300 + daysInMonth * columnWidth);
     }
+
 
     @FXML
     private void distributionDuty(String place, int value) {
@@ -238,6 +264,21 @@ public class DutyTableController {
             e.printStackTrace();
         }
     }
+
+    public void loadSelectedKuranty() {
+        if (selectedKuranty == null || selectedKuranty.isEmpty()) {
+            return;
+        }
+
+        kursanty = selectedKuranty.stream()
+                .map(User::getPib)
+                .toList();
+
+        Month currentMonth = LocalDate.now().getMonth();
+        monthSelector.setValue(currentMonth.getDisplayName(TextStyle.FULL, new Locale("uk")));
+        generateTableForMonth(currentMonth.getValue());
+    }
+
 
 }
 

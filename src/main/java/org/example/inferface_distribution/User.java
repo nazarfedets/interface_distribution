@@ -1,43 +1,50 @@
 package org.example.inferface_distribution;
 
+
 public class User {
     private String login;
     private String password;
     private String pib;
     private String phone;
-    private String group;
+    private String course;
+    private String groupName;
+    private String role;
 
-    public User(String login, String password, String pib, String phone, String group) {
+    public User(String login, String password, String pib, String phone, String course, String groupName, String role) {
         this.login = login;
         this.password = password;
         this.pib = pib;
         this.phone = phone;
-        this.group = group;
+        this.course = course;
+        this.groupName = groupName;
+        this.role = role;
     }
 
-    public String getLogin() { return login; }
-    public String getPassword() { return password; }
-    public String getPib() { return pib; }
-    public String getPhone() { return phone; }
-    public String getGroup() { return group; }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public String getLogin() {
+        return login;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPib(String pib) {
-        this.pib = pib;
+    public String getPib() {
+        return pib;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
+    public String getCourse() {
+        return course;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public String getRole() {
+        return role;
     }
 }

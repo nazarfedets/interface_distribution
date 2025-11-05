@@ -30,13 +30,13 @@ public class HelloController {
             String login = loginField.getText();
             String password = passwordField.getText();
 
-            User user = Database.getUserByLogin(login);
+            User user = DatabaseConnection.getUserByLogin(login);
             if (user != null && user.getPassword().equals(password)) {
                 try {
                     FXMLLoader loader;
                     Stage stage = new Stage();
 
-                    if (user.getLogin().equals("admin")) {
+                    if ("admin".equalsIgnoreCase(user.getRole())) {
                         loader = new FXMLLoader(getClass().getResource("admin-view.fxml"));
                         stage.setTitle("Меню адміністратора");
                         stage.setMaximized(true);
@@ -45,9 +45,9 @@ public class HelloController {
                         stage.setTitle("Меню користувача");
                     }
 
+
                     Parent root = loader.load();
 
-                    // Передаємо користувача у контролер
                     Object controller = loader.getController();
                     if (controller instanceof UserviewController) {
                         ((UserviewController) controller).setUser(user);
