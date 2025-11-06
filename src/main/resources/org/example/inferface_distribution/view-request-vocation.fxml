@@ -9,44 +9,45 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+<BorderPane stylesheets="@my.css" prefHeight="800.0" prefWidth="1540.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.inferface_distribution.ViewRequestVocatuonController">
+    <center>
+        <TableView fx:id="tableView" blendMode="MULTIPLY" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <columns>
+                <TableColumn fx:id="pibColumn" prefWidth="203.0" text="ПІБ" />
+                <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Дата" />
+                <TableColumn fx:id="typeColumn" prefWidth="200.0" text="Тип" />
+                <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Статус" />
+            </columns>
+            <BorderPane.margin>
+                <Insets bottom="10.0" left="10.0" />
+            </BorderPane.margin>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+        </TableView>
+    </center>
 
-<BorderPane stylesheets="@my.css" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1540.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.inferface_distribution.ViewRequestVocatuonController">
-   <center>
-      <TableView fx:id="tableView" blendMode="MULTIPLY" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-        <columns>
-            <TableColumn fx:id="pibColumn" prefWidth="203.0" text="ПІБ" />
-            <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Дата" />
-            <TableColumn fx:id="typeColumn" prefWidth="200.0" text="Тип" />
-            <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Статус" />
-        </columns>
-         <BorderPane.margin>
-            <Insets bottom="10.0" left="10.0" />
-         </BorderPane.margin>
-         <columnResizePolicy>
-            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-         </columnResizePolicy>
-      </TableView>
-   </center>
-   <right>
-      <VBox alignment="CENTER" prefHeight="558.0" prefWidth="118.0" spacing="100.0" BorderPane.alignment="CENTER">
-         <children>
-            <Button fx:id="approveBtn" onAction="#approveRequest" mnemonicParsing="false" text="Підтвердити" VBox.vgrow="NEVER" />
-            <Button fx:id="rejectBtn" mnemonicParsing="false" onAction="#rejectRequest" text="Відхилити" />
-            <Button fx:id="btnCancel" onAction="#cancelButton"  mnemonicParsing="false" text="Назад" />
-         </children>
-         <BorderPane.margin>
-            <Insets bottom="10.0" right="10.0" />
-         </BorderPane.margin>
-      </VBox>
-   </right>
-   <top>
-      <Label alignment="CENTER" prefHeight="44.0" prefWidth="194.0" text="Таблиця Заявок" textAlignment="CENTER" BorderPane.alignment="CENTER">
-         <font>
-            <Font size="14.0" />
-         </font>
-         <BorderPane.margin>
-            <Insets top="10.0" />
-         </BorderPane.margin>
-      </Label>
-   </top>
+    <right>
+        <VBox alignment="CENTER" spacing="50.0" BorderPane.alignment="CENTER">
+            <children>
+                <Button fx:id="approveBtn" text="Підтвердити" onAction="#approveRequest" styleClass="main-button"/>
+                <Button fx:id="rejectBtn" text="Відхилити" onAction="#rejectRequest" styleClass="danger-button"/>
+                <Button fx:id="btnCancel" text="Назад" onAction="#cancelButton" styleClass="secondary-button"/>
+            </children>
+            <BorderPane.margin>
+                <Insets bottom="10.0" right="20.0" />
+            </BorderPane.margin>
+        </VBox>
+    </right>
+
+    <top>
+        <Label text="Таблиця Заявок" alignment="CENTER" textAlignment="CENTER" styleClass="header-label" BorderPane.alignment="CENTER">
+            <font>
+                <Font size="18.0" />
+            </font>
+            <BorderPane.margin>
+                <Insets top="20.0" />
+            </BorderPane.margin>
+        </Label>
+    </top>
 </BorderPane>

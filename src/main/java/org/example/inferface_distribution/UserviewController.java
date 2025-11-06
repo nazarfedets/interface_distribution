@@ -17,9 +17,17 @@ public class UserviewController {
     @FXML private Label errorLabel;
     @FXML private Button btnchangeDuty;
     private User user;
+    @FXML private Label lblName;
+    @FXML private Label lblGroup;
+    @FXML private Label lblCourse;
+    @FXML private Label lblPhone;
 
     public void setUser(User user) {
         this.user = user;
+        lblName.setText(user.getPib());
+        lblGroup.setText(user.getGroupName());
+        lblCourse.setText(user.getCourse());
+        lblPhone.setText(user.getPhone());
     }
     @FXML
     private void openRequestWindows() {
