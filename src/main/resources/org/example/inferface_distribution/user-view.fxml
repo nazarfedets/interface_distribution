@@ -36,7 +36,7 @@
    </VBox>
 
    <VBox alignment="CENTER" layoutX="603.0" layoutY="100.0" spacing="30">
-      <Button prefWidth="350.0" text="Переглянути наряди" styleClass="main-button" />
+      <Button fx:id="btnopenDutyView" onAction="#openUserView" prefWidth="350.0" text="Переглянути наряди" styleClass="main-button" />
       <Button fx:id="requestVocation" onAction="#openRequestWindows" prefWidth="350.0" text="Подати заявку на звільнення / відпустку" styleClass="success-button" />
       <Button fx:id="btnchangeDuty" onAction="#openChangeDutyWindow" prefWidth="350.0" text="Подати заявку на змінення наряду" styleClass="warning-button" />
    </VBox>

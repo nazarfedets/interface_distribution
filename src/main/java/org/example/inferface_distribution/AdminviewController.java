@@ -1,5 +1,6 @@
 package org.example.inferface_distribution;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -30,6 +31,7 @@ public class AdminviewController {
     @FXML private Button btnCZ31;
     private ObservableList<User> allUsers;
     @FXML private AnchorPane rootPane;
+    @FXML private TableColumn<User,String> totalDutyColumn;
 
     @FXML
     public void initialize() {
@@ -46,6 +48,14 @@ public class AdminviewController {
 
         rootPane.widthProperty().addListener((obs, oldVal, newVal) -> scaleUI());
         rootPane.heightProperty().addListener((obs, oldVal, newVal) -> scaleUI());
+
+        totalDutyColumn.setCellValueFactory(cellData -> {
+            User user = cellData.getValue();
+            DutyDAO dutyDAO = new DutyDAO();
+            long totalCount = dutyDAO.getAllDutiesForUser(user.getLogin()).size();
+            return new SimpleStringProperty(String.valueOf(totalCount));
+        });
+
     }
 
     private void filterByGroup(String groupName) {

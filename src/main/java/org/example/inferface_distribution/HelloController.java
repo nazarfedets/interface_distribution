@@ -32,6 +32,7 @@ public class HelloController {
 
             User user = DatabaseConnection.getUserByLogin(login);
             if (user != null && user.getPassword().equals(password)) {
+                UserSession.setCurrentUser(user.getLogin(), user.getPib());
                 try {
                     FXMLLoader loader;
                     Stage stage = new Stage();

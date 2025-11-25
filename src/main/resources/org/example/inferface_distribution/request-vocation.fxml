@@ -14,7 +14,7 @@
       </AnchorPane>
 
       <VBox alignment="CENTER" spacing="40" AnchorPane.topAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="10" prefWidth="250">
-         <Button fx:id="btnSend" text="Відправити" minWidth="200" styleClass="success-button" />
+         <Button fx:id="btnSend" onAction="#btnSend" text="Відправити" minWidth="200" styleClass="success-button" />
          <Button fx:id="btnCancel" text="Скасувати" minWidth="200" onAction="#cancelButton" styleClass="secondary-button" />
       </VBox>
    </children>

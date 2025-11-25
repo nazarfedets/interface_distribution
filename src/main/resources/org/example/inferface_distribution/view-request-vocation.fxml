@@ -13,10 +13,12 @@
     <center>
         <TableView fx:id="tableView" blendMode="MULTIPLY" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <columns>
-                <TableColumn fx:id="pibColumn" prefWidth="203.0" text="ПІБ" />
-                <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Дата" />
-                <TableColumn fx:id="typeColumn" prefWidth="200.0" text="Тип" />
-                <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Статус" />
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+                <TableColumn fx:id="pibColumn" text="ПІБ" prefWidth="150"/>
+                <TableColumn fx:id="reasonColumn" text="Причина" prefWidth="200"/>
+                <TableColumn fx:id="dateColumn" text="Дата" prefWidth="100"/>
+                <TableColumn fx:id="typeColumn" text="Тип" prefWidth="150"/>
+                <TableColumn fx:id="statusColumn" text="Статус" prefWidth="100"/>
             </columns>
             <BorderPane.margin>
                 <Insets bottom="10.0" left="10.0" />

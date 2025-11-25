@@ -21,6 +21,7 @@ public class UserviewController {
     @FXML private Label lblGroup;
     @FXML private Label lblCourse;
     @FXML private Label lblPhone;
+    @FXML private Button btnopenDutyView;
 
     public void setUser(User user) {
         this.user = user;
@@ -63,4 +64,27 @@ public class UserviewController {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    private void openUserView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("view-duty.fxml"));
+            Parent root = loader.load();
+
+            ViewDutyController controller = loader.getController();
+            controller.setUserLogin(user.getLogin());
+
+
+            Stage stage = new Stage();
+            stage.setTitle("Мої наряди");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(btnopenDutyView.getScene().getWindow());
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

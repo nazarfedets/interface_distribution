@@ -1,7 +1,11 @@
 package org.example.inferface_distribution;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class DutyDAO {
@@ -56,4 +60,31 @@ public class DutyDAO {
             e.printStackTrace();
         }
     }
+
+
+
+    public List<Duty> getAllDutiesForUser(String userLogin) {
+        List<Duty> duties = new ArrayList<>();
+        String sql = "SELECT * FROM duties WHERE user_login = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, userLogin);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Duty duty = new Duty(
+                        rs.getInt("id"),
+                        rs.getString("user_login"),
+                        rs.getInt("year"),
+                        rs.getInt("month"),
+                        rs.getInt("day"),
+                        rs.getString("place")
+                );
+                duties.add(duty);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return duties;
+    }
+
 }

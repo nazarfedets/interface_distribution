@@ -11,29 +11,32 @@ import javafx.stage.Stage;
 
 public class ViewRequestVocatuonController {
     @FXML private TableView<RequestData> tableView;
+    @FXML private TableColumn<RequestData, String> idColumn;
     @FXML private TableColumn<RequestData, String> pibColumn;
+    @FXML private TableColumn<RequestData, String> reasonColumn;
     @FXML private TableColumn<RequestData, String> dateColumn;
     @FXML private TableColumn<RequestData, String> typeColumn;
     @FXML private TableColumn<RequestData, String> statusColumn;
     @FXML private Button btnCancel;
     @FXML private Button approveBtn;
     @FXML private Button rejectBtn;
+    private final ChangeDutyRequestDAO changeDutyRequestDAO = new ChangeDutyRequestDAO();
+
 
     private ObservableList<RequestData> requests = FXCollections.observableArrayList();
+    private final RequestVocationDAO requestDAO = new RequestVocationDAO();
 
     @FXML
     public void initialize() {
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         pibColumn.setCellValueFactory(new PropertyValueFactory<>("pib"));
+        reasonColumn.setCellValueFactory(new PropertyValueFactory<>("reason"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // Тестові заявки
-        requests.addAll(
-                new RequestData("Іваненко Іван", "2025-10-28", "Заміна наряду", "Очікує"),
-                new RequestData("Петренко Олег", "2025-10-29", "Звільнення", "Очікує")
-        );
-
+        requests.addAll(requestDAO.getAllRequests());
+        requests.addAll(changeDutyRequestDAO.getAllChangeDutyRequests());
         tableView.setItems(requests);
     }
 
@@ -41,6 +44,7 @@ public class ViewRequestVocatuonController {
     private void approveRequest() {
         RequestData selected = tableView.getSelectionModel().getSelectedItem();
         if (selected != null) {
+            requestDAO.updateStatus(selected.getId(), "Підтверджено");
             selected.setStatus("Підтверджено");
             tableView.refresh();
         }
@@ -50,6 +54,7 @@ public class ViewRequestVocatuonController {
     private void rejectRequest() {
         RequestData selected = tableView.getSelectionModel().getSelectedItem();
         if (selected != null) {
+            requestDAO.updateStatus(selected.getId(), "Відхилено");
             selected.setStatus("Відхилено");
             tableView.refresh();
         }

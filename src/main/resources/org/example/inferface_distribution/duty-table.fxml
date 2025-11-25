@@ -8,36 +8,30 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="800.0" prefWidth="1560.0" stylesheets="@my.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.inferface_distribution.DutyTableController">
+<AnchorPane prefHeight="800.0" prefWidth="1560.0" stylesheets="@duty-table.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.inferface_distribution.DutyTableController">
 
     <children>
-        <ScrollPane fitToHeight="true" fitToWidth="false" hbarPolicy="AS_NEEDED" layoutX="11.0" layoutY="36.0" prefHeight="754.0" prefWidth="1170.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="11.0" AnchorPane.topAnchor="36.0">
+
+        <ScrollPane fitToHeight="true" fitToWidth="true" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="11.0" AnchorPane.rightAnchor="350.0" AnchorPane.topAnchor="36.0">
             <content>
-                <TableView fx:id="tableView" prefHeight="738.0" prefWidth="1170.0" />
+                <TableView fx:id="tableView" />
             </content>
         </ScrollPane>
 
-        <VBox alignment="BOTTOM_CENTER" layoutX="1256.0" layoutY="578.0" prefHeight="200.0" prefWidth="235.0" AnchorPane.bottomAnchor="22.0" AnchorPane.rightAnchor="98.0">
-            <children>
-                <Button fx:id="btnCancel" layoutX="1360.0" layoutY="730.0" prefHeight="35.0" prefWidth="150.0" styleClass="danger-button" text="Назад" onAction="#cancelButton" />
+        <ComboBox fx:id="monthSelector" prefWidth="260" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="36.0" />
+        <ComboBox fx:id="placeDuty" prefWidth="150" AnchorPane.rightAnchor="125.0" AnchorPane.topAnchor="101.0" />
+        <Spinner fx:id="dutyCount" prefWidth="60" AnchorPane.rightAnchor="60.0" AnchorPane.topAnchor="101.0" />
+        <Button fx:id="saveBtn" prefWidth="40" styleClass="small-button" text="Ок" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="101.0" />
 
+        <VBox prefWidth="260" spacing="20" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="200.0">
+            <children>
+                <Button fx:id="distributionBtn"  prefHeight="16.0" prefWidth="260.0" styleClass="main-button" text="Розподілити наряди" />
+                <Button fx:id="changeDutybtn" onAction="#onEditDuty" prefHeight="40.0" prefWidth="260.0" styleClass="secondary-button" text="Змінити наряд" />
+                <Button fx:id="addFreeDays" onAction="#openFreeDaysWindow" prefHeight="38.0" prefWidth="260.0" styleClass="info-button" text="Додати ІП/Звільнення" />
             </children>
         </VBox>
 
-        <ComboBox fx:id="monthSelector" layoutX="1216.0" layoutY="36.0" prefHeight="26.0" prefWidth="286.0" />
+        <Button fx:id="btnCancel" onAction="#cancelButton" prefHeight="35" prefWidth="150" styleClass="danger-button" text="Назад" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0" />
 
-        <ComboBox fx:id="placeDuty" layoutX="1216.0" layoutY="101.0" prefWidth="150.0" promptText="Місце наряду" />
-
-        <Spinner fx:id="dutyCount" layoutX="1396.0" layoutY="101.0" prefHeight="26.0" prefWidth="62.0" />
-
-        <Button fx:id="saveBtn" layoutX="1470.0" layoutY="101.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="50.0" styleClass="small-button" text="Ок" />
-
-        <VBox layoutX="1232.0" layoutY="308.0" prefHeight="310.0" prefWidth="235.0" spacing="100.0" styleClass="vbox-buttons">
-            <children>
-                <Button fx:id="distributionBtn" mnemonicParsing="false" onAction="#onAssignClick" prefHeight="26.0" prefWidth="243.0" styleClass="main-button" text="Розприділити наряди" />
-                <Button fx:id="changeDutybtn" mnemonicParsing="false" onAction="#onEditDuty" prefHeight="26.0" prefWidth="256.0" styleClass="secondary-button" text="Змінити наряд" />
-                <Button fx:id="addFreeDays" mnemonicParsing="false" onAction="#openFreeDaysWindow" prefHeight="26.0" prefWidth="295.0" styleClass="info-button" text="Додати ІП/Звільнення" />
-            </children>
-        </VBox>
     </children>
 </AnchorPane>
