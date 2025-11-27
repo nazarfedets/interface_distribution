@@ -49,12 +49,13 @@ public class DutyDAO {
         return list;
     }
 
-    public void clearMonth(int year, int month) {
-        String sql = "DELETE FROM duties WHERE year = ? AND month = ?";
+    public void deleteDutiesForMonthByPlace(int year, int month, String place) {
+        String sql = "DELETE FROM duties WHERE year = ? AND month = ? AND place = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, year);
             stmt.setInt(2, month);
+            stmt.setString(3, place);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

@@ -12,7 +12,7 @@
 
     <children>
 
-        <ScrollPane fitToHeight="true" fitToWidth="true" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="11.0" AnchorPane.rightAnchor="350.0" AnchorPane.topAnchor="36.0">
+        <ScrollPane fitToHeight="true" hbarPolicy="ALWAYS" fitToWidth="false" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="11.0" AnchorPane.rightAnchor="350.0" AnchorPane.topAnchor="36.0">
             <content>
                 <TableView fx:id="tableView" />
             </content>

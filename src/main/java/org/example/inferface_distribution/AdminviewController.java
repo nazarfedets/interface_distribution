@@ -32,6 +32,9 @@ public class AdminviewController {
     private ObservableList<User> allUsers;
     @FXML private AnchorPane rootPane;
     @FXML private TableColumn<User,String> totalDutyColumn;
+    private final UserDAO userDAO = new UserDAO();
+    private final DutyDAO dutyDAO = new DutyDAO();
+
 
     @FXML
     public void initialize() {
@@ -52,7 +55,7 @@ public class AdminviewController {
         totalDutyColumn.setCellValueFactory(cellData -> {
             User user = cellData.getValue();
             DutyDAO dutyDAO = new DutyDAO();
-            long totalCount = dutyDAO.getAllDutiesForUser(user.getLogin()).size();
+            long totalCount = dutyDAO.getAllDutiesForUser(user.getPib()).size();
             return new SimpleStringProperty(String.valueOf(totalCount));
         });
 

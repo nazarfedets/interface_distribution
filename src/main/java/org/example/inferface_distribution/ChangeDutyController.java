@@ -1,6 +1,7 @@
 package org.example.inferface_distribution;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
@@ -15,21 +16,19 @@ public class ChangeDutyController {
     @FXML private ChoiceBox<String> choiceBoxDuty;
 
     private final DutyDAO dutyDAO = new DutyDAO();
+    private List<Duty> dutyList;
 
     @FXML
     public void initialize() {
         String currentUser = UserSession.getCurrentUserLogin();
-        List<Duty> duties = dutyDAO.getAllDutiesForUser(currentUser);
-        System.out.println("Поточний користувач: " + currentUser);
-        System.out.println("Скільки нарядів знайдено: " + duties.size());
+        this.dutyList = dutyDAO.getAllDutiesForUser(currentUser);
 
-        for (Duty d : duties) {
+        for (Duty d : dutyList) {
             choiceBoxDuty.getItems().add(
                     d.getId() + " | " + d.getYear() + "-" + d.getMonth() + "-" + d.getDay() + " | " + d.getPlace()
             );
         }
     }
-
 
     @FXML
     private void cancelButton(){
@@ -37,21 +36,52 @@ public class ChangeDutyController {
         backWindow.close();
     }
 
+
     @FXML
     private void sendChangeRequest() {
-        String selectedDuty = choiceBoxDuty.getValue();
+        String selectedDutyDisplay = choiceBoxDuty.getValue();
         String reason = textFieldchange.getText();
 
-        if(selectedDuty != null && !reason.isEmpty()){
-            int dutyId = Integer.parseInt(selectedDuty.split("\\|")[0].trim());
-            ChangeDutyDAO changeDAO = new ChangeDutyDAO();
-            changeDAO.saveChangeRequest(UserSession.getCurrentUserLogin(), dutyId, reason);
+        if(selectedDutyDisplay != null && !reason.isEmpty()){
+            int dutyId = Integer.parseInt(selectedDutyDisplay.split("\\|")[0].trim());
 
-            System.out.println("Заявка на зміну наряду створена!");
+            Duty selectedDuty = dutyList.stream()
+                    .filter(d -> d.getId() == dutyId)
+                    .findFirst()
+                    .orElse(null);
+
+            if (selectedDuty == null) {
+                showError("Помилка: Не вдалося знайти обраний наряд у системі.");
+                return;
+            }
+
+            ChangeDutyDAO changeDAO = new ChangeDutyDAO();
+            changeDAO.saveChangeRequest(
+                    UserSession.getCurrentUserLogin(),
+                    dutyId,
+                    reason
+            );
+
+            showSuccess("Вашу заявку на зміну наряду успішно створено!");
             Stage stage = (Stage) btnSend.getScene().getWindow();
             stage.close();
         } else {
-            System.out.println("Виберіть наряд та вкажіть причину");
+            showError("Виберіть наряд та обов'язково вкажіть причину.");
         }
     }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, message);
+        alert.setHeaderText(null);
+        alert.setTitle("Помилка");
+        alert.showAndWait();
+    }
+
+    private void showSuccess(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, message);
+        alert.setHeaderText(null);
+        alert.setTitle("Успіх");
+        alert.showAndWait();
+    }
+
 }

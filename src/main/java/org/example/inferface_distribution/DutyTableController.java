@@ -22,21 +22,19 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class DutyTableController {
+
     @FXML private Button btnCancel;
     @FXML private TableView<RowData> tableView;
     @FXML private ComboBox<String> monthSelector;
-    private TableColumn<RowData, String> pibCol;
-    private ObservableList<RowData> data;
-    private final Map<String, ObservableList<RowData>> dutiesByMonth = new HashMap<>();
     @FXML private Button addFreeDays;
     @FXML private ComboBox<String> placeDuty;
     @FXML private Spinner<Integer> dutyCount;
     @FXML private Button distributionBtn;
     @FXML private Button changeDutybtn;
+    private ObservableList<RowData> data;
     private List<String> kursanty;
     private List<User> selectedKuranty;
     private final Map<Integer, ObservableList<RowData>> monthToRows = new HashMap<>();
-
 
     public void setSelectedKuranty(List<User> selectKuranty) {
         this.selectedKuranty = selectKuranty;
@@ -45,17 +43,9 @@ public class DutyTableController {
 
     @FXML
     private void initialize() {
-        Platform.runLater(() -> applyAutoScaling());
-        if (selectedKuranty == null) {
-            UserDAO userDAO = new UserDAO();
-            selectedKuranty = userDAO.getAllUsers().stream()
-                    .filter(u -> !u.getLogin().equals("admin"))
-                    .toList();
-        }
-
-        kursanty = selectedKuranty.stream()
-                .map(User::getPib)
-                .toList();
+        tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        dutyCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1));
+        placeDuty.setItems(FXCollections.observableArrayList("Їдальня", "Курс", "Варта"));
 
         monthSelector.getItems().addAll(
                 "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
@@ -65,28 +55,22 @@ public class DutyTableController {
         Month currentMonth = LocalDate.now().getMonth();
         monthSelector.setValue(currentMonth.getDisplayName(TextStyle.FULL, new Locale("uk")));
 
-        pibCol = new TableColumn<>("ПІБ");
-        pibCol.setCellValueFactory(new PropertyValueFactory<>("pib"));
-        pibCol.setPrefWidth(150);
-        tableView.getColumns().add(pibCol);
-
-        generateTableForMonth(currentMonth.getValue());
-
         monthSelector.setOnAction(e -> {
             int monthNumber = monthSelector.getSelectionModel().getSelectedIndex() + 1;
             generateTableForMonth(monthNumber);
         });
 
-        tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-
-        SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1);
-        dutyCount.setValueFactory(valueFactory);
-
-        placeDuty.setItems(FXCollections.observableArrayList("Їдільння","Курс", "Варта"));
-
         distributionBtn.setOnAction(e -> onAssignClick());
-    }
 
+        if (selectedKuranty == null) {
+            UserDAO userDAO = new UserDAO();
+            selectedKuranty = userDAO.getAllUsers().stream()
+                    .filter(u -> !u.getLogin().equals("admin"))
+                    .toList();
+        }
+
+        Platform.runLater(() -> generateTableForMonth(currentMonth.getValue()));
+    }
 
     private void generateTableForMonth(int month) {
         tableView.getColumns().clear();
@@ -94,134 +78,158 @@ public class DutyTableController {
         int year = LocalDate.now().getYear();
         YearMonth ym = YearMonth.of(year, month);
         int daysInMonth = ym.lengthOfMonth();
-        double columnWidth = 30;
+        double columnWidth = 37;
 
         TableColumn<RowData, String> pibCol = new TableColumn<>("ПІБ");
         pibCol.setCellValueFactory(new PropertyValueFactory<>("pib"));
         pibCol.setPrefWidth(150);
         tableView.getColumns().add(pibCol);
 
-        TableColumn<RowData, String> countCol = new TableColumn<>("К-сть нарядів");
+        TableColumn<RowData, String> countCol = new TableColumn<>("К-сть");
         countCol.setCellValueFactory(cellData -> {
             RowData row = cellData.getValue();
-            long count = row.getAllValues().stream()
-                    .filter(val -> val != null && !val.isEmpty())
-                    .count();
-            return new SimpleStringProperty(String.valueOf(count));
-        });
-        countCol.setPrefWidth(120);
-        tableView.getColumns().add(countCol);
+            Set<String> dutyPlaces = Set.of("Їдальня", "Курс", "Варта");
 
+            long actualDutyCount = row.getAllValues().stream()
+                    .filter(val -> val != null)
+                    .map(String::trim)
+                    .filter(dutyPlaces::contains)
+                    .count();
+
+            return new SimpleStringProperty(String.valueOf(actualDutyCount));
+        });
+        countCol.setPrefWidth(60);
+        tableView.getColumns().add(countCol);
 
         for (int i = 1; i <= daysInMonth; i++) {
             TableColumn<RowData, String> dayCol = new TableColumn<>(String.valueOf(i));
             final int day = i;
             dayCol.setCellValueFactory(cellData ->
                     new SimpleStringProperty(cellData.getValue().getValuesForDays(day)));
+
+            dayCol.setCellFactory(tc -> new TableCell<RowData, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty ? null : item);
+                    setStyle("-fx-alignment: CENTER;");
+                }
+            });
+
             dayCol.setPrefWidth(columnWidth);
             tableView.getColumns().add(dayCol);
         }
 
-        if (monthToRows.containsKey(month)) {
-            data = monthToRows.get(month);
-        } else {
+        if (!monthToRows.containsKey(month)) {
             DutyDAO dutyDAO = new DutyDAO();
             List<Duty> dutiesFromDB = dutyDAO.getDutiesForMonth(year, month);
 
-            UserDAO userDAO = new UserDAO();
-            Map<String, String> loginToPib = userDAO.getAllUsers().stream()
-                    .sorted(Comparator.comparing(User::getPib))
-                    .collect(Collectors.toMap(User::getLogin, User::getPib,
-                            (oldV, newV) -> oldV, LinkedHashMap::new));
+            List<User> sortedUsers = new ArrayList<>(selectedKuranty);
+            sortedUsers.sort(Comparator.comparing(User::getPib));
 
             data = FXCollections.observableArrayList();
+            for (User user : sortedUsers) {
+                RowData rowData = new RowData(user.getPib(), daysInMonth);
 
-            for (String login : loginToPib.keySet()) {
-                String pib = loginToPib.get(login);
-                RowData rowData = new RowData(pib, daysInMonth);
+
                 for (Duty d : dutiesFromDB) {
-                    if (d.getUserLogin().equals(login)) {
+                    if (d.getUserLogin().equals(user.getLogin())) {
                         rowData.setValueForDay(d.getDay(), d.getPlace());
                     }
                 }
                 data.add(rowData);
             }
-
             monthToRows.put(month, FXCollections.observableArrayList(data));
+        } else {
+            data = FXCollections.observableArrayList(monthToRows.get(month));
         }
 
         tableView.setItems(data);
-        tableView.setPrefWidth(300 + daysInMonth * columnWidth);
+        tableView.setPrefWidth(250 + daysInMonth * columnWidth);
+        tableView.refresh();
     }
 
-
     @FXML
-    private void distributionDuty(String place, int value) {
+    private void distributionDuty(String place, int dutiesPerDay) {
         DutyDAO dutyDAO = new DutyDAO();
         int year = LocalDate.now().getYear();
         int month = monthSelector.getSelectionModel().getSelectedIndex() + 1;
         int daysInMonth = YearMonth.of(year, month).lengthOfMonth();
 
-        if (data == null || data.isEmpty()) return;// перевірка даних
+        if (data == null || data.isEmpty()) return;
 
-        // очищення таблиці
-        for (int day = 1; day <= daysInMonth; day++) {
-            for (RowData row : data) {
-                row.setValueForDay(day, "");
+        for (RowData cadet : data) {
+            for (int day = 1; day <= daysInMonth; day++) {
+                String val = cadet.getValuesForDays(day);
+                if (place.equals(val)) {
+                    cadet.setValueForDay(day, ""); // Очищуємо клітинку в моделі
+                }
             }
         }
+        dutyDAO.deleteDutiesForMonthByPlace(year, month, place);
+        monthToRows.put(month, FXCollections.observableArrayList(data));
 
-        //список минулих нарядів
-        Map<RowData, List<Integer>> lastDutyDays = new HashMap<>();
-        for (RowData cadet : data) {
-            lastDutyDays.put(cadet, new ArrayList<>());
-        }
+        Map<RowData, List<Integer>> existingDutyDays = new HashMap<>();
+        Map<RowData, Integer> totalDutyCount = new HashMap<>();
 
-        //кількість нарядів
-        Map<RowData, Integer> dutyCount = new HashMap<>();
         for (RowData cadet : data) {
-            dutyCount.put(cadet, 0);
+            List<Integer> busyDays = new ArrayList<>();
+            int count = 0;
+
+            for (int day = 1; day <= daysInMonth; day++) {
+                String val = cadet.getValuesForDays(day);
+                if (val != null && !val.trim().isEmpty()) {
+                    busyDays.add(day);
+                    count++;
+                }
+            }
+            existingDutyDays.put(cadet, busyDays);
+            totalDutyCount.put(cadet, count);
         }
 
         Random random = new Random();
 
         for (int day = 1; day <= daysInMonth; day++) {
             final int currentDay = day;
-            List<RowData> availableCadets = data.stream()//перевірка курсантів які можуть заступити
-                    .filter(c -> lastDutyDays.get(c).stream().noneMatch(d -> Math.abs(d - currentDay) < 3))
+            List<RowData> availableCadets = data.stream()
+                    .filter(c -> {
+                        String currentVal = c.getValuesForDays(currentDay);
+                        return currentVal == null || currentVal.trim().isEmpty();
+                    })
+                    .filter(c -> {
+                        return existingDutyDays.get(c).stream()
+                                .noneMatch(busyDay -> Math.abs(busyDay - currentDay) < 3);
+                    })
                     .collect(Collectors.toList());
 
-            int assignments = Math.min(value, availableCadets.size());
-            if (assignments == 0) continue;
-
-            for (int i = 0; i < assignments; i++) {
-                //пошук мінімальну кількість нарядів серед доступних
+            if (availableCadets.isEmpty()) continue;
+            int assignmentsNeeded = Math.min(dutiesPerDay, availableCadets.size());
+            for (int i = 0; i < assignmentsNeeded; i++) {
+                if (availableCadets.isEmpty()) break;
                 int minCount = availableCadets.stream()
-                        .mapToInt(dutyCount::get)
+                        .mapToInt(totalDutyCount::get)
                         .min()
                         .orElse(0);
 
-                List<RowData> leastLoaded = availableCadets.stream()
-                        .filter(c -> dutyCount.get(c) == minCount)
-                        .collect(Collectors.toList());
+                List<RowData> candidates = availableCadets.stream()
+                        .filter(c -> totalDutyCount.get(c) == minCount)
+                        .toList();
 
-                RowData chosen = leastLoaded.get(random.nextInt(leastLoaded.size()));
-                availableCadets.remove(chosen);
-                // Призначення наряду
+                RowData chosen = candidates.get(random.nextInt(candidates.size()));
+
                 chosen.setValueForDay(day, place);
-                lastDutyDays.get(chosen).add(day);
-                dutyCount.put(chosen, dutyCount.get(chosen) + 1);
 
+                existingDutyDays.get(chosen).add(day);
+                totalDutyCount.put(chosen, totalDutyCount.get(chosen) + 1);
+
+                availableCadets.remove(chosen);
                 dutyDAO.addDuty(chosen.getPib(), year, month, day, place);
-                monthToRows.put(month, FXCollections.observableArrayList(data));
-
             }
         }
 
+        monthToRows.put(month, FXCollections.observableArrayList(data));
         tableView.refresh();
     }
-
-
 
     @FXML
     private void openFreeDaysWindow() {
@@ -252,12 +260,11 @@ public class DutyTableController {
             showError("Оберіть місце наряду!");
             return;
         }
-        int dailyCount = dutyCount.getValue();
         distributionDuty(place, count);
     }
 
-    private void showError(String mwssage) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, mwssage);
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, message);
         alert.setHeaderText(null);
         alert.showAndWait();
     }
@@ -274,7 +281,13 @@ public class DutyTableController {
             return;
         }
 
-        int day = Integer.parseInt(selectedCell.getTableColumn().getText());
+        String colText = selectedCell.getTableColumn().getText();
+        if(!colText.matches("\\d+")) {
+            showError("Оберіть клітинку з датою!");
+            return;
+        }
+
+        int day = Integer.parseInt(colText);
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("edit-duty.fxml"));
@@ -301,24 +314,19 @@ public class DutyTableController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("admin-view.fxml"));
             Parent root = loader.load();
-
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setMaximized(true);
             stage.show();
-
             Stage currentStage = (Stage) btnCancel.getScene().getWindow();
             currentStage.close();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void loadSelectedKuranty() {
-        if (selectedKuranty == null || selectedKuranty.isEmpty()) {
-            return;
-        }
+        if (selectedKuranty == null || selectedKuranty.isEmpty()) return;
 
         kursanty = selectedKuranty.stream()
                 .map(User::getPib)
@@ -326,30 +334,11 @@ public class DutyTableController {
 
         Month currentMonth = LocalDate.now().getMonth();
         monthSelector.setValue(currentMonth.getDisplayName(TextStyle.FULL, new Locale("uk")));
+
+
+        monthToRows.clear();
         generateTableForMonth(currentMonth.getValue());
     }
 
-    private void applyAutoScaling() {
-        Scene scene = tableView.getScene();
-        Parent root = scene.getRoot();
-        double baseWidth = 1560.0;
-        double baseHeight = 800.0;
-        javafx.beans.property.DoubleProperty scale = new javafx.beans.property.SimpleDoubleProperty(1);
-        scale.addListener((obs, oldVal, newVal) -> {
-            root.setScaleX(newVal.doubleValue());
-            root.setScaleY(newVal.doubleValue());
-        });
-        scene.widthProperty().addListener((obs, oldVal, newVal) -> {
-            double wScale = newVal.doubleValue() / baseWidth;
-            double hScale = scene.getHeight() / baseHeight;
-            scale.set(Math.min(wScale, hScale));
-        });
-
-        scene.heightProperty().addListener((obs, oldVal, newVal) -> {
-            double wScale = scene.getWidth() / baseWidth;
-            double hScale = newVal.doubleValue() / baseHeight;
-            scale.set(Math.min(wScale, hScale));
-        });
-    }
 
 }

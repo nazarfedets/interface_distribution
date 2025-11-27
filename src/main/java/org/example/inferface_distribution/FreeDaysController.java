@@ -22,12 +22,19 @@ public class FreeDaysController {
     @FXML private Button addBtn;
     @FXML private Button cancelBtn;
     private ObservableList<RowData> cadetdList;
+    private final DutyDAO dutyDAO = new DutyDAO();
+    private int currentMonth;
+    private int currentYear;
 
     public void setCadetdList(ObservableList<RowData> cadets) {
         this.cadetdList = cadets;
         comboBoxCursant.getItems().clear();
         for (RowData row : cadets) {
             comboBoxCursant.getItems().add(row.getPib());
+
+            LocalDate today = LocalDate.now();
+            this.currentMonth = today.getMonthValue();
+            this.currentYear = today.getYear();
         }
     }
 
@@ -78,12 +85,17 @@ public class FreeDaysController {
             default -> "";
         };
 
+        int year = start.getYear();
+        int month = start.getMonthValue();
+
         for (RowData row : cadetdList) {
             if (row.getPib().equals(pib)) {
                 LocalDate date = start;
                 while (!date.isAfter(end)) {
                     int day = date.getDayOfMonth();
                     row.setValueForDay(day, shortCode);
+                    dutyDAO.addDuty(pib, year, month, day, shortCode);
+
                     date = date.plusDays(1);
                 }
                 break;

@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class ChangeDutyDAO {
 
     public void saveChangeRequest(String userPib, int dutyId, String reason) {
-        String sql = "INSERT INTO change_duties (user_pib, duty_id, reason, status) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO change_duties (user_pib, duty_id, reason, status, duty_date) VALUES (?, ?, ?, ?,?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 

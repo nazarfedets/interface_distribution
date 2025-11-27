@@ -23,6 +23,8 @@
 .table-view .column-header .label {
     -fx-font-weight: bold;
     -fx-padding: 6px;
+    -fx-text-fill: black;
+    -fx-font-size: 10px;
 }
 
 .table-row-cell {

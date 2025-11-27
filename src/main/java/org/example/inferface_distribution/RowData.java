@@ -17,6 +17,11 @@ public class RowData {
         }
     }
 
+    public RowData(RowData other) {
+        this.pib = other.pib;
+        this.duties = new HashMap<>(other.duties);
+    }
+
     public String getPib() {
         return pib;
     }
