@@ -46,4 +46,30 @@ public class UserDAO {
         }
         return null;
     }
+
+    public User getUserByLogin(String login) {
+        String sql = "SELECT login, password, pib, phone, course, group_name, role FROM users WHERE login = ?";
+        User user = null;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, login);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User(
+                            rs.getString("login"),
+                            rs.getString("password"),
+                            rs.getString("pib"), // <-- Нам потрібен саме цей стовпець
+                            rs.getString("phone"),
+                            rs.getString("course"),
+                            rs.getString("group_name"),
+                            rs.getString("role")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
 }

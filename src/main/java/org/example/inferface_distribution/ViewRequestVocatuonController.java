@@ -29,10 +29,10 @@ public class ViewRequestVocatuonController {
     @FXML
     public void initialize() {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        pibColumn.setCellValueFactory(new PropertyValueFactory<>("pib"));
+        pibColumn.setCellValueFactory(new PropertyValueFactory<>("userPib"));       // збігається з RequestData
         reasonColumn.setCellValueFactory(new PropertyValueFactory<>("reason"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
-        typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+        typeColumn.setCellValueFactory(new PropertyValueFactory<>("requestType"));  // збігається з RequestData
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         requests.addAll(requestDAO.getAllRequests());
@@ -44,7 +44,11 @@ public class ViewRequestVocatuonController {
     private void approveRequest() {
         RequestData selected = tableView.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            requestDAO.updateStatus(selected.getId(), "Підтверджено");
+            if (selected.getRequestType().equals("Зміна наряду")) {
+                changeDutyRequestDAO.updateStatus(selected.getId(), "Підтверджено");
+            } else {
+                requestDAO.updateStatus(selected.getId(), "Підтверджено");
+            }
             selected.setStatus("Підтверджено");
             tableView.refresh();
         }
@@ -54,11 +58,16 @@ public class ViewRequestVocatuonController {
     private void rejectRequest() {
         RequestData selected = tableView.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            requestDAO.updateStatus(selected.getId(), "Відхилено");
+            if (selected.getRequestType().equals("Зміна наряду")) {
+                changeDutyRequestDAO.updateStatus(selected.getId(), "Відхилено");
+            } else {
+                requestDAO.updateStatus(selected.getId(), "Відхилено");
+            }
             selected.setStatus("Відхилено");
             tableView.refresh();
         }
     }
+
 
     @FXML
     private void cancelButton() {

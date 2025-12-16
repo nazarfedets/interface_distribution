@@ -25,12 +25,13 @@ public class DutyTableController {
 
     @FXML private Button btnCancel;
     @FXML private TableView<RowData> tableView;
-    @FXML private ComboBox<String> monthSelector;
+    @FXML private ComboBox<String> monthComboBox;
     @FXML private Button addFreeDays;
-    @FXML private ComboBox<String> placeDuty;
+    @FXML private ComboBox<String> placeComboBox;
     @FXML private Spinner<Integer> dutyCount;
     @FXML private Button distributionBtn;
     @FXML private Button changeDutybtn;
+    @FXML private Spinner<Integer> dutiesPerDaySpinner;
     private ObservableList<RowData> data;
     private List<String> kursanty;
     private List<User> selectedKuranty;
@@ -45,18 +46,18 @@ public class DutyTableController {
     private void initialize() {
         tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         dutyCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1));
-        placeDuty.setItems(FXCollections.observableArrayList("Їдальня", "Курс", "Варта"));
+        placeComboBox.setItems(FXCollections.observableArrayList("Їдальня", "Курс", "Варта"));
 
-        monthSelector.getItems().addAll(
+        monthComboBox.getItems().addAll(
                 "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
                 "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"
         );
 
         Month currentMonth = LocalDate.now().getMonth();
-        monthSelector.setValue(currentMonth.getDisplayName(TextStyle.FULL, new Locale("uk")));
+        monthComboBox.setValue(currentMonth.getDisplayName(TextStyle.FULL, new Locale("uk")));
 
-        monthSelector.setOnAction(e -> {
-            int monthNumber = monthSelector.getSelectionModel().getSelectedIndex() + 1;
+        monthComboBox.setOnAction(e -> {
+            int monthNumber = monthComboBox.getSelectionModel().getSelectedIndex() + 1;
             generateTableForMonth(monthNumber);
         });
 
@@ -153,8 +154,13 @@ public class DutyTableController {
     private void distributionDuty(String place, int dutiesPerDay) {
         DutyDAO dutyDAO = new DutyDAO();
         int year = LocalDate.now().getYear();
-        int month = monthSelector.getSelectionModel().getSelectedIndex() + 1;
-        int daysInMonth = YearMonth.of(year, month).lengthOfMonth();
+        int selectedIndex = monthComboBox.getSelectionModel().getSelectedIndex() + 1;
+        if (selectedIndex < 0) {
+            showAlert("Помилка", "Будь ласка, оберіть місяць");
+            return;
+        }
+        int month = selectedIndex + 1;
+        int daysInMonth = YearMonth.of(year, selectedIndex).lengthOfMonth();
 
         if (data == null || data.isEmpty()) return;
 
@@ -162,12 +168,12 @@ public class DutyTableController {
             for (int day = 1; day <= daysInMonth; day++) {
                 String val = cadet.getValuesForDays(day);
                 if (place.equals(val)) {
-                    cadet.setValueForDay(day, ""); // Очищуємо клітинку в моделі
+                    cadet.setValueForDay(day, "");
                 }
             }
         }
-        dutyDAO.deleteDutiesForMonthByPlace(year, month, place);
-        monthToRows.put(month, FXCollections.observableArrayList(data));
+        dutyDAO.deleteDutiesForMonthByPlace(year, selectedIndex, place);
+        monthToRows.put(selectedIndex, FXCollections.observableArrayList(data));
 
         Map<RowData, List<Integer>> existingDutyDays = new HashMap<>();
         Map<RowData, Integer> totalDutyCount = new HashMap<>();
@@ -223,11 +229,11 @@ public class DutyTableController {
                 totalDutyCount.put(chosen, totalDutyCount.get(chosen) + 1);
 
                 availableCadets.remove(chosen);
-                dutyDAO.addDuty(chosen.getPib(), year, month, day, place);
+                dutyDAO.addDuty(chosen.getPib(), year, selectedIndex, day, place);
             }
         }
 
-        monthToRows.put(month, FXCollections.observableArrayList(data));
+        monthToRows.put(selectedIndex, FXCollections.observableArrayList(data));
         tableView.refresh();
     }
 
@@ -253,20 +259,20 @@ public class DutyTableController {
 
     @FXML
     private void onAssignClick() {
-        String place = placeDuty.getValue();
-        Integer count = dutyCount.getValue();
+        String place = placeComboBox.getValue();
+        Integer dutiesPerDay = dutiesPerDaySpinner.getValue();
 
-        if (place == null) {
-            showError("Оберіть місце наряду!");
+        if (place == null || place.isBlank()) {
+            showAlert("Помилка", "Оберіть місце наряду");
             return;
         }
-        distributionDuty(place, count);
-    }
 
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message);
-        alert.setHeaderText(null);
-        alert.showAndWait();
+        if (dutiesPerDay == null || dutiesPerDay <= 0) {
+            showAlert("Помилка", "Кількість нарядів має бути більшою за 0");
+            return;
+        }
+
+        distributionDuty(place, dutiesPerDay);
     }
 
     @FXML
@@ -333,12 +339,28 @@ public class DutyTableController {
                 .toList();
 
         Month currentMonth = LocalDate.now().getMonth();
-        monthSelector.setValue(currentMonth.getDisplayName(TextStyle.FULL, new Locale("uk")));
+        monthComboBox.setValue(currentMonth.getDisplayName(TextStyle.FULL, new Locale("uk")));
 
 
         monthToRows.clear();
         generateTableForMonth(currentMonth.getValue());
     }
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Помилка");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 
 
 }

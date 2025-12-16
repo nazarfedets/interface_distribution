@@ -18,9 +18,9 @@
             </content>
         </ScrollPane>
 
-        <ComboBox fx:id="monthSelector" prefWidth="260" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="36.0" />
-        <ComboBox fx:id="placeDuty" prefWidth="150" AnchorPane.rightAnchor="125.0" AnchorPane.topAnchor="101.0" />
-        <Spinner fx:id="dutyCount" prefWidth="60" AnchorPane.rightAnchor="60.0" AnchorPane.topAnchor="101.0" />
+        <ComboBox fx:id="monthComboBox" prefWidth="260" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="36.0" />
+        <ComboBox fx:id="placeComboBox" prefWidth="150" AnchorPane.rightAnchor="125.0" AnchorPane.topAnchor="101.0" />
+        <Spinner fx:id="dutiesPerDaySpinner" prefWidth="60" AnchorPane.rightAnchor="60.0" AnchorPane.topAnchor="101.0" />
         <Button fx:id="saveBtn" prefWidth="40" styleClass="small-button" text="Ок" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="101.0" />
 
         <VBox prefWidth="260" spacing="20" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="200.0">
