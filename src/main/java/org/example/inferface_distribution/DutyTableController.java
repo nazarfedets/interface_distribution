@@ -28,7 +28,6 @@ public class DutyTableController {
     @FXML private ComboBox<String> monthComboBox;
     @FXML private Button addFreeDays;
     @FXML private ComboBox<String> placeComboBox;
-    @FXML private Spinner<Integer> dutyCount;
     @FXML private Button distributionBtn;
     @FXML private Button changeDutybtn;
     @FXML private Spinner<Integer> dutiesPerDaySpinner;
@@ -45,7 +44,7 @@ public class DutyTableController {
     @FXML
     private void initialize() {
         tableView.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
-        dutyCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1));
+        dutiesPerDaySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1));
         placeComboBox.setItems(FXCollections.observableArrayList("Їдальня", "Курс", "Варта"));
 
         monthComboBox.getItems().addAll(
@@ -159,7 +158,7 @@ public class DutyTableController {
             showAlert("Помилка", "Будь ласка, оберіть місяць");
             return;
         }
-        int month = selectedIndex + 1;
+        int month = selectedIndex;
         int daysInMonth = YearMonth.of(year, selectedIndex).lengthOfMonth();
 
         if (data == null || data.isEmpty()) return;
@@ -209,9 +208,12 @@ public class DutyTableController {
                     .collect(Collectors.toList());
 
             if (availableCadets.isEmpty()) continue;
+
             int assignmentsNeeded = Math.min(dutiesPerDay, availableCadets.size());
+
             for (int i = 0; i < assignmentsNeeded; i++) {
                 if (availableCadets.isEmpty()) break;
+
                 int minCount = availableCadets.stream()
                         .mapToInt(totalDutyCount::get)
                         .min()
@@ -224,17 +226,22 @@ public class DutyTableController {
                 RowData chosen = candidates.get(random.nextInt(candidates.size()));
 
                 chosen.setValueForDay(day, place);
-
                 existingDutyDays.get(chosen).add(day);
                 totalDutyCount.put(chosen, totalDutyCount.get(chosen) + 1);
-
                 availableCadets.remove(chosen);
-                dutyDAO.addDuty(chosen.getPib(), year, selectedIndex, day, place);
+
+                String realLogin = selectedKuranty.stream()
+                        .filter(u -> u.getPib().equals(chosen.getPib()))
+                        .map(User::getLogin)
+                        .findFirst()
+                        .orElse(chosen.getPib());
+
+                dutyDAO.addDuty(realLogin, year, selectedIndex, day, place);
             }
         }
-
         monthToRows.put(selectedIndex, FXCollections.observableArrayList(data));
         tableView.refresh();
+
     }
 
     @FXML
